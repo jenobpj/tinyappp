@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/jenobpj/tinyappp/issues"
   },
-  "homepage": "https://github.com/jenobpj/tinyappp#readme"
+  "homepage": "https://github.com/jenobpj/tinyappp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }

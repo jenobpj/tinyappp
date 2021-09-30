@@ -36,14 +36,15 @@ const users = {
 
 //showing MY urls page ////urls_index page edit and delete button created
 app.get("/urls", (req, res) => {
-  if(req.cookies['user_id']){
+  if(req.cookies['user_id']){//checks user is login or not
+  const newDataBase=userForUrls(req.cookies['user_id'])//call function for showing users urls
   const ida=req.cookies["user_id"]
   const user=users[ida]
-  const templateVars = { urls: urlDatabase,user};
+  const templateVars = { urls: newDataBase,user};
   res.render("urls_index", templateVars);
   return;
   }
-  res.send('You need to login first')
+  res.status(400).send('You need to login first')
 
 });
 //showing creatNew url page
@@ -55,13 +56,13 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new",templateVars);
   return;
   }
-  res.send('You need to login  first')
+  res.status(400).send('You need to login  first')
 });
 
 //creeating new url
 app.post("/urls", (req, res) => {  
   if(req.cookies["user_id"]){
-  const shortURL=generateRandomString();//creating shorturl
+  const shortURL=generateRandomString();//create shorturl
   const longURL=req.body.longURL;
   urlDatabase[shortURL]={longURL,userID:req.cookies["user_id"]};//added to database
   res.redirect(`/urls/${shortURL}`)//
@@ -83,7 +84,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
   return;
 }
-res.send('The shortUrl does not exist')
+res.status(400).send('The shortUrl does not exist')
 });
 
 
@@ -96,10 +97,10 @@ app.post(`/urls/:shortURL/delete`,(req,res)=>{
   res.redirect('/urls') //Redirect to the client back to the urls_index page
   return
     }
-    res.send('You are not authorized to delete')
+    res.status(400).send('You are not authorized to delete')
     return;
   }
-  res.send('You need to login first')
+  res.status(400).send('You need to login first')
 })
 
 //updating urls
@@ -112,9 +113,9 @@ app.post('/urls/:id',(req,res)=>{
   res.redirect('/urls')
   return;
   }
-  res.send('You do not permission to update the url')
-  }ç
-  res.send('You need to login first')
+  return res.status(400).send('You dont have permission to edit')
+  }
+  res.status(400).send('You need to login first')
 })
 //To the register form
 app.get('/register',(req,res)=>{ 
@@ -125,7 +126,7 @@ app.get('/register',(req,res)=>{
 app.post('/register',(req,res)=>{ 
   const{user,email,password}=req.body;//parsing the value
   if(user === '' ||email ==='' || password === ''){
-    res.status(400).send('Sorry, you have to fill the form')
+    return res.status(400).send('Sorry, you have to fill the form')
 
   }
   const foundPerson=findByEmailId(email,users)
@@ -164,7 +165,7 @@ app.post('/login',(req,res)=>{
 app.post('/logout',(req,res)=>{
   const keys=Object.keys(req.cookies);//extraceted the cookie key
   res.clearCookie(keys);//clear cookie
-  res.redirect('/urls')
+  res.redirect('/login')
 });
 
 app.listen(PORT, () => {
@@ -202,4 +203,16 @@ function findByEmailId(emailexample,usersDB){
     }
   }
   return false;
+}
+
+//function for Userfor urls
+function userForUrls(id){
+  let myUrl={};
+  for(key in urlDatabase){
+    let usersid=urlDatabase[key].userID
+    if(id === usersid){
+      myUrl[key]=urlDatabase[key];
+    }
+  }
+  return myUrl
 }

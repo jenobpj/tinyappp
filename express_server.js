@@ -30,16 +30,15 @@ const users = {
 
 
 app.get("/urls", (req, res) => {
-  const id=req.cookies["user_id"]
-  const user=users[id]
-  console.log(user,'line34')
+  const ida=req.cookies["user_id"]
+  const user=users[ida]
   const templateVars = { urls: urlDatabase,user};
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const id=req.cookies["user_id"]
-  const user=users[id]
+  const ida=req.cookies["user_id"]
+  const user=users[ida]
   const templateVars = { urls: urlDatabase,user};
   res.render("urls_new",templateVars);
 });
@@ -47,8 +46,8 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const longURL= urlDatabase[req.params.shortURL];
-  const id=req.cookies["user_id"]
-  const user=users[id]
+  const ida=req.cookies["user_id"]
+  const user=users[ida]
   if (longURL === undefined) {
     res.redirect("/urls");
     return;
@@ -76,10 +75,7 @@ app.post('/urls/:id',(req,res)=>{
   res.redirect('/urls')
 })
 
-app.post('/login',(req,res)=>{
-  //res.cookie("username",req.body["username"])//created the cookie
-  res.redirect('/urls')
-})
+
 
 
 app.post('/logout',(req,res)=>{
@@ -89,11 +85,11 @@ app.post('/logout',(req,res)=>{
 });
 
 
-app.get('/register',(req,res)=>{ // showing register form
+//To the register form
+app.get('/register',(req,res)=>{ 
   const templateVars = {user:null};
   res.render("register", templateVars);
 })
-
 //creating new user 
 app.post('/register',(req,res)=>{ 
   const{user,email,password}=req.body;//parsing the value
@@ -107,17 +103,38 @@ app.post('/register',(req,res)=>{
     return;
   }
   const userID=createUser(email,password,users);
-  console.log(users)
-  res.cookie("user_id",userID)
+  res.cookie("user_id",userID)// creating cookie
   res.redirect('/urls')  
 })
+
+
+//To the login page
 app.get('/login',(req,res)=>{
-  
+  const templateVars = {user:null};
+res.render('login',templateVars)
+
 })
+app.post('/login',(req,res)=>{
+  const{emailId,passwordId}=req.body;
+  //retrieve the user from the db
+  const userFound=findByEmailId(emailId,users)
+  //compare the passwords
+  if(userFound && userFound.password === passwordId){
+    //user is authenticated
+    res.cookie('user_id',userFound.id)
+    res.redirect('/urls')
+    return;
+  }
+  //user is not authenticated
+  res.status(403).send('wrong credentials')
+
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
 
 //generateRandom function//
 function generateRandomString(){

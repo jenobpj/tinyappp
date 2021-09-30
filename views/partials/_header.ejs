@@ -18,18 +18,15 @@
         </div>
       </form>
    <% } else {%> 
-    <form method="POST" action="/login" class="form-inline">
-      <div class="form-group form-inline">
-        <input type="text" name="username">
-        <button type="submit" class="btn btn-outline-dark" style="margin: 1em">Login</button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" href="/login" style="margin: 1em">Login</a>
+        <a class="nav-item nav-link" href="/register" style="margin: 1em">Register</a>
       </div>
-    </form>
+    </div>
+    
     <% } %>
-    <form method="GET" action="/register" class="form-inline">
-      <div class="form-group form-inline">
-        <button type="submit" class="btn btn-outline-dark" style="margin: 1em">Register</button>
-      </div>
-    </form>
+    
     
     
   </nav>

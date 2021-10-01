@@ -6,7 +6,7 @@ const cookieParser=require('cookie-parser')//cookieparser
 const bcypt= require('bcryptjs');
 const salt =bcypt.genSaltSync(10);
 const cookieSession=require("cookie-session")
-const {generateRandomString} = require('./helper')
+const {generateRandomString,findByEmailId,userForUrls} = require('./helper')
 
 
 app.set("view engine", "ejs");//set the view
@@ -34,18 +34,18 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcypt.hashSync("purple-monkey-dinosaur",salt)
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcypt.hashSync("dishwasher-funk",salt)
   }
 }
 
 //showing MY urls page ////urls_index page edit and delete button created
 app.get("/urls", (req, res) => {
-  const newDataBase=userForUrls(req.session.user_id)//call function for showing users urls
+  const newDataBase=userForUrls(req.session.user_id,urlDatabase)//call function for showing users urls
   const ida=req.session.user_id;
   const user=users[ida]
   if(user){//checks user is login or not
@@ -197,27 +197,4 @@ function createUser(email,password,usersDB){
     password:bcypt.hashSync(password)
   }
   return randomID;
-}
-//functio to find the user
-
-function findByEmailId(emailexample,usersDB){
-  for(let userKey in usersDB){
-    const person=usersDB[userKey];
-    if(person.email === emailexample){
-      return person
-    }
-  }
-  return false;
-}
-
-//function for Userfor urls
-function userForUrls(id){
-  let myUrl={};
-  for(key in urlDatabase){
-    let usersid=urlDatabase[key].userID
-    if(id === usersid){
-      myUrl[key]=urlDatabase[key];
-    }
-  }
-  return myUrl
 }

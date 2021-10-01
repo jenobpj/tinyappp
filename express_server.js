@@ -6,6 +6,7 @@ const cookieParser=require('cookie-parser')//cookieparser
 const bcypt= require('bcryptjs');
 const salt =bcypt.genSaltSync(10);
 const cookieSession=require("cookie-session")
+const {generateRandomString} = require('./helper')
 
 
 app.set("view engine", "ejs");//set the view
@@ -44,15 +45,15 @@ const users = {
 
 //showing MY urls page ////urls_index page edit and delete button created
 app.get("/urls", (req, res) => {
-  if(req.session.user_id){//checks user is login or not
   const newDataBase=userForUrls(req.session.user_id)//call function for showing users urls
   const ida=req.session.user_id;
   const user=users[ida]
+  if(user){//checks user is login or not
   const templateVars = { urls: newDataBase,user};
   res.render("urls_index", templateVars);
   return;
   }
-  res.status(400).send('You need to login first')
+  return res.status(401).send("You must <a href='/login'>Login</a> first")
 
 });
 //showing creatNew url page
@@ -64,7 +65,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new",templateVars);
   return;
   }
-  res.status(400).send('You need to login  first')
+  res.status(400).send("You must <a href='/login'>Login</a> first")
 });
 
 //creeating new url
@@ -108,7 +109,7 @@ app.post(`/urls/:shortURL/delete`,(req,res)=>{
     res.status(400).send('You are not authorized to delete')
     return;
   }
-  res.status(400).send('You need to login first')
+  res.status(400).send("You must <a href='/login'>Login</a> first")
 })
 
 //updating urls
@@ -123,7 +124,7 @@ app.post('/urls/:id',(req,res)=>{
   }
   return res.status(400).send('You dont have permission to edit')
   }
-  res.status(400).send('You need to login first')
+  res.status(400).send("You must <a href='/login'>Login</a> first")
 })
 //To the register form
 app.get('/register',(req,res)=>{ 
@@ -157,6 +158,11 @@ res.render('login',templateVars)
 })
 app.post('/login',(req,res)=>{
   const{emailId,passwordId}=req.body;
+
+  if(emailId ==='' || passwordId === ''){
+    return res.status(400).send('Sorry, you have to fill the form')
+  }
+
   //retrieve the user from the db
   const userFound=findByEmailId(emailId,users)
   //compare the passwords
@@ -182,16 +188,6 @@ app.listen(PORT, () => {
 
 
 
-//generateRandom function//
-function generateRandomString(){
-  let randomCharacters='';
-  const characters='ABCDEFGHIJKLMNOPQRSTUVWXYXabcdefghijklmnopqrstuvwxy1234567890';
-  for(let i=0;i<6;i++){
-    let randomNumber=Math.floor(Math.random() * 56 +1);
-    randomCharacters +=characters[randomNumber]
-  }
-  return randomCharacters;
-}
 //function for creating user
 function createUser(email,password,usersDB){
   const randomID=generateRandomString();
@@ -202,7 +198,8 @@ function createUser(email,password,usersDB){
   }
   return randomID;
 }
-// functio to find the user
+//functio to find the user
+
 function findByEmailId(emailexample,usersDB){
   for(let userKey in usersDB){
     const person=usersDB[userKey];

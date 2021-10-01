@@ -3,10 +3,10 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");//body-parser 
 const cookieParser=require('cookie-parser')//cookieparser
-const bcypt= require('bcryptjs');
+const bcypt= require('bcryptjs');//bccrypt
 const salt =bcypt.genSaltSync(10);
 const cookieSession=require("cookie-session")
-const {generateRandomString,findByEmailId,userForUrls} = require('./helper')
+const {generateRandomString,findByEmailId,userForUrls,userfinds} = require('./helper')
 
 
 app.set("view engine", "ejs");//set the view
@@ -17,7 +17,7 @@ app.use(cookieSession({//set cookiesession;
   keys:['tinyapp']
 }));
 app.use(bodyParser.urlencoded({extended: true}));
-
+//**************************************************************** *****************************/
 //url database //
 const urlDatabase = {
   b6UTxQ: {
@@ -42,12 +42,12 @@ const users = {
     password: bcypt.hashSync("dishwasher-funk",salt)
   }
 }
+//**************************************************************** *****************************/
 
 //showing MY urls page ////urls_index page edit and delete button created
 app.get("/urls", (req, res) => {
   const newDataBase=userForUrls(req.session.user_id,urlDatabase)//call function for showing users urls
-  const ida=req.session.user_id;
-  const user=users[ida]
+  const user=userfinds(users,req.session.user_id);
   if(user){//checks user is login or not
   const templateVars = { urls: newDataBase,user};
   res.render("urls_index", templateVars);
@@ -56,18 +56,18 @@ app.get("/urls", (req, res) => {
   return res.status(401).send("You must <a href='/login'>Login</a> first")
 
 });
+//**************************************************************** *****************************/
 //showing creatNew url page
 app.get("/urls/new", (req, res) => {
   if(req.session.user_id){ // checking user is logedin or not
-  const ida=req.session.user_id;
-  const user=users[ida]
+  const user=userfinds(users,req.session.user_id)
   const templateVars = { urls: urlDatabase,user};
   res.render("urls_new",templateVars);
   return;
   }
   res.status(400).send("You must <a href='/login'>Login</a> first")
 });
-
+//**************************************************************** *****************************/
 //creeating new url
 app.post("/urls", (req, res) => {  
   if(req.session.user_id){
@@ -77,14 +77,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`)//
   }
 });
-
+//**************************************************************** *****************************/
 //direct to the urls_show will show the individual url
 app.get("/urls/:shortURL", (req, res) => {
   const objectKeys=Object.keys(urlDatabase);//checking short is exist or not
   if(objectKeys.includes(req.params.shortURL)){
   const longURL= urlDatabase[req.params.shortURL].longURL;
-  const ida=req.session.user_id;
-  const user=users[ida]
+  const user=userfinds(users,req.session.user_id)
   if (longURL === undefined) {
     res.redirect("/urls");
     return;
@@ -96,7 +95,7 @@ app.get("/urls/:shortURL", (req, res) => {
 res.status(400).send('The shortUrl does not exist')
 });
 
-
+//**************************************************************** *****************************/
 //deleting urls
 app.post(`/urls/:shortURL/delete`,(req,res)=>{
   if(req.session.user_id){
@@ -111,7 +110,7 @@ app.post(`/urls/:shortURL/delete`,(req,res)=>{
   }
   res.status(400).send("You must <a href='/login'>Login</a> first")
 })
-
+//**************************************************************** *****************************/
 //updating urls
 app.post('/urls/:id',(req,res)=>{
   if(req.session.user_id){
@@ -126,6 +125,9 @@ app.post('/urls/:id',(req,res)=>{
   }
   res.status(400).send("You must <a href='/login'>Login</a> first")
 })
+
+//**************************************************************** *****************************/
+
 //To the register form
 app.get('/register',(req,res)=>{ 
   const templateVars = {user:null};
@@ -144,10 +146,11 @@ app.post('/register',(req,res)=>{
     return;
   }
   const userID=createUser(email,password,users);
-  //res.cookie("user_id",userID)// creating cookie
-  req.session.user_id=userID;
+  req.session.user_id=userID;//create cookie session
   res.redirect('/urls')  
 })
+
+//**************************************************************** *****************************/
 
 
 //To the login page
@@ -198,3 +201,5 @@ function createUser(email,password,usersDB){
   }
   return randomID;
 }
+
+

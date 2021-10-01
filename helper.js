@@ -27,5 +27,9 @@ function userForUrls(id,database){
   }
   return myUrl
 }
+function userfinds(usersDB,id){
+  return usersDB[id]
+}
 
-module.exports={generateRandomString,findByEmailId,userForUrls};
+
+module.exports={generateRandomString,findByEmailId,userForUrls,userfinds};

@@ -1,4 +1,4 @@
-//generateRandom function//
+//generateRandom key//
 function generateRandomString(){
   let randomCharacters='';
   const characters='ABCDEFGHIJKLMNOPQRSTUVWXYXabcdefghijklmnopqrstuvwxy1234567890';
@@ -8,6 +8,8 @@ function generateRandomString(){
   }
   return randomCharacters;
 }
+
+//findByEmail function for checking emailid registered with email id or not 
 function findByEmailId(emailexample,usersDB){
   for(let userKey in usersDB){
     const person=usersDB[userKey];
@@ -17,6 +19,8 @@ function findByEmailId(emailexample,usersDB){
   }
   return false;
 }
+
+//function for showing urls
 function userForUrls(id,database){
   let myUrl={};
   for(key in database){
@@ -27,6 +31,8 @@ function userForUrls(id,database){
   }
   return myUrl
 }
+
+//To find the user
 function userfinds(usersDB,id){
   return usersDB[id]
 }

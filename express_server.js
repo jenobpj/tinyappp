@@ -159,7 +159,11 @@ app.post('/urls/:id',(req,res) => {
 
 /*To the register form */
 app.get('/register',(req,res) => {
-  const templateVars = {user:null};
+  const user = userfinds(users,req.session.user_id);
+  if (user) {
+    return res.redirect('/urls')
+  }
+  const templateVars = {user};
   res.render("register", templateVars);
 });
 

@@ -1,3 +1,5 @@
+const bcypt = require('bcryptjs');
+
 //generateRandom key//
 function generateRandomString(){
   let randomCharacters='';
@@ -37,5 +39,17 @@ function userfinds(usersDB,id){
   return usersDB[id]
 }
 
+//function for creating user
+function createUser(email,password,usersDB) {
+  const randomID = generateRandomString();
+  // creating new user
+  usersDB[randomID] = {
+    id:randomID,
+    email:email,
+    password:bcypt.hashSync(password)
+  };
+  return randomID;
+}
 
-module.exports={generateRandomString,findByEmailId,userForUrls,userfinds};
+
+module.exports={generateRandomString,findByEmailId,userForUrls,userfinds,createUser};

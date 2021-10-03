@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const bcypt = require('bcryptjs');
 const salt = bcypt.genSaltSync(10);
 const cookieSession = require("cookie-session");
-const {generateRandomString,findByEmailId,userForUrls,userfinds} = require('./helper');
+const {generateRandomString,findByEmailId,userForUrls,userfinds,createUser} = require('./helper');
 
 //set the view
 app.set("view engine", "ejs");
@@ -19,6 +19,8 @@ app.use(cookieSession({
 }));
 app.use(bodyParser.urlencoded({extended: true}));
 
+
+
 //url database //
 const urlDatabase = {
   b6UTxQ: {
@@ -30,6 +32,9 @@ const urlDatabase = {
     userID: "aJ48lW"
   }
 };
+
+
+
 //user database//
 const users = {
   "userRandomID": {
@@ -43,6 +48,7 @@ const users = {
     password: bcypt.hashSync("dishwasher-funk",salt)
   }
 };
+
 
 
 // /page
@@ -59,9 +65,13 @@ app.get('/',(req,res)=>{
 
 //showing MY urls page
 app.get("/urls", (req, res) => {
+
+
   //call function for showing users urls
   const newDataBase = userForUrls(req.session.user_id,urlDatabase);
   const user = userfinds(users,req.session.user_id);
+
+
   //checks user is login or not
   if (user) {
     const templateVars = { urls: newDataBase,user};
@@ -76,6 +86,8 @@ app.get("/urls", (req, res) => {
 //show create new url page
 app.get("/urls/new", (req, res) => {
   const user = userfinds(users,req.session.user_id);
+
+
   // checking user is login or not
   if (user) {
     const templateVars = { urls: urlDatabase,user};
@@ -115,6 +127,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const user = userfinds(users,req.session.user_id);
   if (user) {
 
+
     //If user  logged in but does not own the URL for the given ID
     if (urlDatabase[req.params.shortURL]['userID'] !== req.session.user_id) {
       return res.status(401).send('You dont own the URL for the given ID');
@@ -137,10 +150,15 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
+
 //deleting urls
 app.post(`/urls/:shortURL/delete`,(req, res) => {
+
+
   //find the user using usefinds function
   const user = userfinds(users,req.session.user_id);
+
+
   //checks user login or not
   if (user) {
     const shortURL = req.params.shortURL;
@@ -156,10 +174,15 @@ app.post(`/urls/:shortURL/delete`,(req, res) => {
 });
 
 
+
 //update urls
 app.post('/urls/:id',(req,res) => {
+
+
   //find user using userfinds function
   const user = userfinds(users,req.session.user_id);
+
+
   //checks user login or not
   if (user) {
     const shortURL = req.params.id;
@@ -175,6 +198,7 @@ app.post('/urls/:id',(req,res) => {
 });
 
 
+
 /*To the register form */
 app.get('/register',(req,res) => {
   const user = userfinds(users,req.session.user_id);
@@ -184,6 +208,8 @@ app.get('/register',(req,res) => {
   const templateVars = {user};
   res.render("register", templateVars);
 });
+
+
 
 /*creating new user*/
 app.post('/register',(req,res) => {
@@ -216,6 +242,7 @@ app.get('/login',(req,res) => {
 });
 
 
+
 //login post request
 app.post('/login',(req,res) => {
   const {emailId,passwordId} = req.body;
@@ -226,8 +253,11 @@ app.post('/login',(req,res) => {
 
   //retrieve the user from the userdatabase
   const userFound = findByEmailId(emailId,users);
+
+
   //compare the passwords
   if (userFound && bcypt.compareSync(passwordId,userFound.password)) {
+
     //user is authenticated
     req.session.user_id = userFound.id;
     res.redirect('/urls');
@@ -236,6 +266,7 @@ app.post('/login',(req,res) => {
   //user is not authenticated
   res.status(403).send('wrong credentials');
 });
+
 
 
 //logout page
@@ -247,19 +278,3 @@ app.post('/logout',(req,res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-
-//function for creating user
-function createUser(email,password,usersDB) {
-  const randomID = generateRandomString();
-  // creating new user
-  usersDB[randomID] = {
-    id:randomID,
-    email:email,
-    password:bcypt.hashSync(password)
-  };
-  return randomID;
-}
-
-

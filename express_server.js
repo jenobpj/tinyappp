@@ -43,6 +43,8 @@ const users = {
     password: bcypt.hashSync("dishwasher-funk",salt)
   }
 };
+
+
 // /page
 app.get('/',(req,res)=>{
   const user = userfinds(users,req.session.user_id);
@@ -52,6 +54,9 @@ app.get('/',(req,res)=>{
   res.redirect('/login');
 
 });
+
+
+
 //showing MY urls page
 app.get("/urls", (req, res) => {
   //call function for showing users urls
@@ -64,8 +69,9 @@ app.get("/urls", (req, res) => {
     return;
   }
   return res.status(401).send("You must <a href='/login'>Login</a> first");
-
 });
+
+
 
 //show create new url page
 app.get("/urls/new", (req, res) => {
@@ -79,6 +85,8 @@ app.get("/urls/new", (req, res) => {
   res.status(400).send("You must <a href='/login'>Login</a> first");
 });
 
+
+
 //create new url
 app.post("/urls", (req, res) => {
   if (req.session.user_id) {
@@ -89,6 +97,8 @@ app.post("/urls", (req, res) => {
   }
 });
 
+
+
 //Redirecting to LongUrl website from url_show page by clicking shortUrl
 app.get('/u/:shortURL',(req,res)=>{
   if (!urlDatabase[req.params.shortURL]) {
@@ -98,10 +108,18 @@ app.get('/u/:shortURL',(req,res)=>{
   res.redirect(longURL);
 });
 
+
+
 //shows individual url
 app.get("/urls/:shortURL", (req, res) => {
   const user = userfinds(users,req.session.user_id);
   if (user) {
+
+    //If user  logged in but does not own the URL for the given ID
+    if (urlDatabase[req.params.shortURL]['userID'] !== req.session.user_id) {
+      return res.status(401).send('You dont own the URL for the given ID');
+    }
+
     const objectKeys = Object.keys(urlDatabase);
     if (objectKeys.includes(req.params.shortURL)) {
       const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -161,7 +179,7 @@ app.post('/urls/:id',(req,res) => {
 app.get('/register',(req,res) => {
   const user = userfinds(users,req.session.user_id);
   if (user) {
-    return res.redirect('/urls')
+    return res.redirect('/urls');
   }
   const templateVars = {user};
   res.render("register", templateVars);
@@ -192,12 +210,11 @@ app.get('/login',(req,res) => {
   const user = userfinds(users,req.session.user_id);
   if (user) {
     return res.redirect('/urls');
-   
   }
   const templateVars = {user};
   res.render('login',templateVars);
-
 });
+
 
 //login post request
 app.post('/login',(req,res) => {
@@ -207,7 +224,7 @@ app.post('/login',(req,res) => {
     return res.status(400).send('Sorry, you have to fill the form');
   }
 
-  //retrieve the user from the db
+  //retrieve the user from the userdatabase
   const userFound = findByEmailId(emailId,users);
   //compare the passwords
   if (userFound && bcypt.compareSync(passwordId,userFound.password)) {
@@ -218,8 +235,9 @@ app.post('/login',(req,res) => {
   }
   //user is not authenticated
   res.status(403).send('wrong credentials');
-
 });
+
+
 //logout page
 app.post('/logout',(req,res) => {
   req.session = null;
